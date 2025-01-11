@@ -1,5 +1,6 @@
 import unittest
 
+import convert
 from convert import text_node_to_html_node, split_nodes_delimiter, extract_markdown_images, extract_markdown_links, split_nodes_image, split_nodes_link, text_to_textnodes
 from textnode import TextNode, TextType
 
@@ -102,6 +103,22 @@ class TestConvert(unittest.TestCase):
 
         for i in range(len(nodes)):
             self.assertEqual(nodes[i], expected[i])
+
+    def test_markdown_to_blocks(self):
+        input = """# This is a heading
+
+This is a paragraph of text. It has some **bold** and *italic* words inside of it.
+
+* This is the first list item in a list block
+* This is a list item
+* This is another list item"""
+
+        output = convert.markdown_to_blocks(input)
+
+        self.assertEqual(len(output), 3)
+        self.assertEqual(output[0], "# This is a heading")
+        self.assertEqual(output[1], "This is a paragraph of text. It has some **bold** and *italic* words inside of it.")
+        self.assertEqual(output[2], "* This is the first list item in a list block\n* This is a list item\n* This is another list item")
 
 if __name__ == "__main__":
     unittest.main()
