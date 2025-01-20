@@ -114,3 +114,66 @@ def markdown_to_blocks(markdown):
         blocks.append("\n".join(new_block))
     return blocks
 
+def block_to_block_type(block):
+    if re.match(r"#{1,6} .+$", block):
+        return "heading"
+    elif re.match(r"```.*```", block, flags=re.DOTALL):
+        return "code"
+    elif block[0] == ">":
+        for line in block.splitlines():
+            if not line:
+                continue
+            if line[0] != ">":
+                raise ValueError("quote block must all start with >")
+        return "quote"
+    elif block[0] == "*" or block[0] == "-":
+        for line in block.splitlines():
+            if not line:
+                continue
+            if (line[0] != "*" and line[0] != "-") or line[1] != " ":
+                raise ValueError("unordered lists must start with \"*\" or \"-\" and a space")
+        return "unordered"
+    elif block[:2] == "1.":
+        i = 1
+        for line in block.splitlines():
+            if not line:
+                continue
+            if line[0] != str(i) or line[1:3] != ". ":
+                raise ValueError("ordered list must start with a number followed by a period and a space")
+            i += 1
+        return "ordered"
+    else:
+        return "paragraph"
+        
+
+def markdown_to_html_node(markdown):
+    blocks = markdown_to_blocks(markdown)
+    html_nodes = []
+    for block in blocks:
+        block_type = block_to_block_type(block)
+
+        if block_type == "heading":
+            hashes, title = block.split(maxsplit=1)
+            html_nodes.append(LeafNode(f"h{len(hashes)}", title))
+        elif block_type == "code":
+            code_node = LeafNode("code", block[3:-3])
+            pre_node = ParentNode("pre", [code_node])
+            html_nodes.append(pre_node)
+        elif block_type == "quote":
+            quoted = "\n".join(map(lambda line: line[2:], block.split("\n")))
+            html_nodes.append(LeafNode("blockquote", quoted))
+        elif block_type == "unordered":
+            children = []
+            for line in block.split("\n"):
+                li_node = LeafNode("li", line[2:])
+                children.append(li_node)
+            html_nodes.append(ParentNode("ul", children))
+        elif block_type == "ordered":
+            children = []
+            for line in block.split("\n"):
+                li_node = LeafNode("li", line[3:])
+                children.append(li_node)
+            html_nodes.append(ParentNode("ol", children))
+        elif block_type == "paragraph":
+            html_nodes.append(LeafNode("p", block))
+    return html_nodes

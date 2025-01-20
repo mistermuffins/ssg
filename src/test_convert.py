@@ -120,5 +120,132 @@ This is a paragraph of text. It has some **bold** and *italic* words inside of i
         self.assertEqual(output[1], "This is a paragraph of text. It has some **bold** and *italic* words inside of it.")
         self.assertEqual(output[2], "* This is the first list item in a list block\n* This is a list item\n* This is another list item")
 
+    def test_block_to_block_type_header(self):
+        input = "### this is a heading"
+
+        output = convert.block_to_block_type(input)
+
+        self.assertEqual(output, "heading")
+
+    def test_block_to_block_type_code(self):
+        input = """```
+this is a some code
+line 2 of code
+```"""
+
+        output = convert.block_to_block_type(input)
+
+        self.assertEqual(output, "code")
+
+    def test_block_to_block_type_quote(self):
+        input = """> four score
+> and twenty years ago
+> our forefathers"""
+
+        output = convert.block_to_block_type(input)
+
+        self.assertEqual(output, "quote")
+
+    def test_block_to_block_type_not_quote(self):
+        input = """> four score
+> and twenty years ago
+our forefathers"""
+
+        with self.assertRaises(ValueError):
+            output = convert.block_to_block_type(input)
+
+    def test_block_to_block_type_unordered(self):
+        input = """* four score
+- and twenty years ago
+* our forefathers"""
+
+        output = convert.block_to_block_type(input)
+
+        self.assertEqual(output, "unordered")
+
+    def test_block_to_block_type_not_unordered(self):
+        input = """* four score
+- and twenty years ago
+*our forefathers"""
+
+        with self.assertRaises(ValueError):
+            output = convert.block_to_block_type(input)
+
+    def test_block_to_block_type_ordered(self):
+        input = """1. four score
+2. and twenty years ago
+3. our forefathers"""
+
+        output = convert.block_to_block_type(input)
+
+        self.assertEqual(output, "ordered")
+
+    def test_block_to_block_type_not_ordered(self):
+        input = """1. four score
+4. and twenty years ago
+3. our forefathers"""
+
+
+        with self.assertRaises(ValueError):
+            output = convert.block_to_block_type(input)
+
+    def test_markdown_to_html_heading(self):
+        input = "# heading 1"
+
+        output = convert.markdown_to_html_node(input)
+
+        self.assertEqual(output[0].to_html(), "<h1>heading 1</h1>")
+
+    def test_markdown_to_html_code(self):
+        input = """```
+this is some
+code
+blah
+```"""
+
+        output = convert.markdown_to_html_node(input)
+
+        self.assertEqual(output[0].to_html(), """<pre><code>
+this is some
+code
+blah
+</code></pre>""")
+
+    def test_markdown_to_html_quote(self):
+        input = """> this is a quote
+> four score and
+> seventy years ago"""
+
+        output = convert.markdown_to_html_node(input)
+
+        self.assertEqual(output[0].to_html(), """<blockquote>this is a quote
+four score and
+seventy years ago</blockquote>""")
+                         
+    def test_markdown_to_html_unordered(self):
+        input = """* this is item 1
+* this is item 2"""
+
+        output = convert.markdown_to_html_node(input)
+
+        self.assertEqual(output[0].to_html(), """<ul><li>this is item 1</li><li>this is item 2</li></ul>""")
+
+    def test_markdown_to_html_ordered(self):
+        input = """1. this is item 1
+2. this is item 2"""
+
+        output = convert.markdown_to_html_node(input)
+
+        self.assertEqual(output[0].to_html(), """<ol><li>this is item 1</li><li>this is item 2</li></ol>""")
+
+    def test_markdown_to_html_paragraph(self):
+        input = """this is some text
+blah blah"""
+
+        output = convert.markdown_to_html_node(input)
+
+        self.assertEqual(output[0].to_html(), """<p>this is some text
+blah blah</p>""")
+
 if __name__ == "__main__":
     unittest.main()
