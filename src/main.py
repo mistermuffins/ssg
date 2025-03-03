@@ -1,9 +1,11 @@
+import fileio
 import textnode
 
 def main():
-    t = textnode.TextNode("This is a text node", textnode.TextType.BOLD, "https://www.boot.dev")
+    # t = textnode.TextNode("This is a text node", textnode.TextType.BOLD, "https://www.boot.dev")
 
-    print(t)
+    # print(t)
+    fileio.copy("static", "public")
 
 main()
 
