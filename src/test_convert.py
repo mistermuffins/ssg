@@ -83,7 +83,7 @@ class TestConvert(unittest.TestCase):
 
     def test_text_to_textnodes(self):
         text = "This is **text** with an *italic* word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
-        
+
         nodes = text_to_textnodes(text)
 
         expected = [
@@ -221,7 +221,7 @@ blah
         self.assertEqual(output[0].to_html(), """<blockquote>this is a quote
 four score and
 seventy years ago</blockquote>""")
-                         
+
     def test_markdown_to_html_unordered(self):
         input = """* this is item 1
 * this is item 2"""
@@ -246,6 +246,27 @@ blah blah"""
 
         self.assertEqual(output[0].to_html(), """<p>this is some text
 blah blah</p>""")
+
+
+    def test_extract_title(self):
+        input = """# this is the title"""
+
+        output = convert.extract_title(input)
+
+        self.assertEqual(output, "this is the title")
+
+    def test_extract_title2(self):
+        input = """blah blah
+
+## this is not the title
+
+# this is the title
+
+# another title"""
+
+        output = convert.extract_title(input)
+
+        self.assertEqual(output, "this is the title")
 
 if __name__ == "__main__":
     unittest.main()

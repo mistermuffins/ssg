@@ -1,3 +1,4 @@
+import os
 import re
 
 from htmlnode import LeafNode, ParentNode
@@ -21,6 +22,7 @@ def text_node_to_html_node(text_node):
             raise ValueError("Can't convert text to html.")
 
 def split_nodes_delimiter(old_nodes, delimiter, text_type):
+    """Takes a list of TextNodes and splits off nodes containing a particular text type."""
     res = []
     for node in old_nodes:
         if node.text_type != TextType.NORMAL:
@@ -41,7 +43,7 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
 def extract_markdown_images(text):
     regex = r"!\[([^\[\]]*)\]\(([^\(\)]*)\)"
     return re.findall(regex, text)
-    
+
 def extract_markdown_links(text):
     regex = r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)"
     return re.findall(regex, text)
@@ -91,8 +93,8 @@ def split_nodes_link(old_nodes):
     return new_nodes
 
 def text_to_textnodes(text):
-    textnode = TextNode(text, TextType.NORMAL)
-    nodes = split_nodes_delimiter([textnode], "**", TextType.BOLD)
+    nodes = [TextNode(text, TextType.NORMAL)]
+    nodes = split_nodes_delimiter(nodes, "**", TextType.BOLD)
     nodes = split_nodes_delimiter(nodes, "*", TextType.ITALIC)
     nodes = split_nodes_delimiter(nodes, "`", TextType.CODE)
     nodes = split_nodes_image(nodes)
@@ -144,7 +146,7 @@ def block_to_block_type(block):
         return "ordered"
     else:
         return "paragraph"
-        
+
 
 def markdown_to_html_node(markdown):
     blocks = markdown_to_blocks(markdown)
@@ -177,3 +179,32 @@ def markdown_to_html_node(markdown):
         elif block_type == "paragraph":
             html_nodes.append(LeafNode("p", block))
     return html_nodes
+
+def extract_title(markdown):
+    html_nodes = markdown_to_html_node(markdown)
+
+    for html_node in html_nodes:
+        if html_node.tag == 'h1':
+            return html_node.value
+
+    raise Exception("h1 not found.")
+
+def generate_page(from_path, template_path, dest_path):
+    print(f"Generating page from {from_path} to {dest_path} using {template_path}")
+
+    with open(from_path) as f:
+        markdown = str(f)
+
+    with open(template_path) as f:
+        template = str(f)
+
+    html = markdown_to_html_node(markdown).to_html()
+    title = extract_title(markdown)
+
+    template.replace("{{ Title }}", title, count=1)
+    template.replace("{{ Content }}", html, count=1)
+
+    os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+
+    with open(dest_path, 'w') as f:
+        f.write(template)
