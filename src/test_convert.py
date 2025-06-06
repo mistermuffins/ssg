@@ -82,7 +82,7 @@ class TestConvert(unittest.TestCase):
         self.assertEqual(nodes[3].text_type, TextType.LINK)
 
     def test_text_to_textnodes(self):
-        text = "This is **text** with an *italic* word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
+        text = "This is **text** with an _italic_ word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
 
         nodes = text_to_textnodes(text)
 
@@ -194,7 +194,7 @@ our forefathers"""
 
         output = convert.markdown_to_html_node(input)
 
-        self.assertEqual(output[0].to_html(), "<h1>heading 1</h1>")
+        self.assertEqual(output.to_html(), "<div><h1>heading 1</h1></div>")
 
     def test_markdown_to_html_code(self):
         input = """```
@@ -205,11 +205,11 @@ blah
 
         output = convert.markdown_to_html_node(input)
 
-        self.assertEqual(output[0].to_html(), """<pre><code>
+        self.assertEqual(output.to_html(), """<div><pre><code>
 this is some
 code
 blah
-</code></pre>""")
+</code></pre></div>""")
 
     def test_markdown_to_html_quote(self):
         input = """> this is a quote
@@ -218,9 +218,9 @@ blah
 
         output = convert.markdown_to_html_node(input)
 
-        self.assertEqual(output[0].to_html(), """<blockquote>this is a quote
+        self.assertEqual(output.to_html(), """<div><blockquote>this is a quote
 four score and
-seventy years ago</blockquote>""")
+seventy years ago</blockquote></div>""")
 
     def test_markdown_to_html_unordered(self):
         input = """* this is item 1
@@ -228,7 +228,7 @@ seventy years ago</blockquote>""")
 
         output = convert.markdown_to_html_node(input)
 
-        self.assertEqual(output[0].to_html(), """<ul><li>this is item 1</li><li>this is item 2</li></ul>""")
+        self.assertEqual(output.to_html(), """<div><ul><li>this is item 1</li><li>this is item 2</li></ul></div>""")
 
     def test_markdown_to_html_ordered(self):
         input = """1. this is item 1
@@ -236,7 +236,7 @@ seventy years ago</blockquote>""")
 
         output = convert.markdown_to_html_node(input)
 
-        self.assertEqual(output[0].to_html(), """<ol><li>this is item 1</li><li>this is item 2</li></ol>""")
+        self.assertEqual(output.to_html(), """<div><ol><li>this is item 1</li><li>this is item 2</li></ol></div>""")
 
     def test_markdown_to_html_paragraph(self):
         input = """this is some text
@@ -244,8 +244,8 @@ blah blah"""
 
         output = convert.markdown_to_html_node(input)
 
-        self.assertEqual(output[0].to_html(), """<p>this is some text
-blah blah</p>""")
+        self.assertEqual(output.to_html(), """<div><p>this is some text
+blah blah</p></div>""")
 
 
     def test_extract_title(self):
@@ -264,9 +264,9 @@ blah blah</p>""")
 
 # another title"""
 
-        output = convert.extract_title(input)
+        with self.assertRaises(ValueError):
+            convert.extract_title(input)
 
-        self.assertEqual(output, "this is the title")
 
 if __name__ == "__main__":
     unittest.main()

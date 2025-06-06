@@ -49,7 +49,7 @@ class TestParentNode(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             node.to_html()
-    
+
     def test_to_html_child(self):
         node = ParentNode("div", [LeafNode("p", "123")])
 
